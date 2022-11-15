@@ -5,5 +5,5 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class OrderServiceImpl {
+public class OrderServiceImpl implements OrderService{
 }
