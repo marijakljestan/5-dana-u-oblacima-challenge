@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 @Entity
@@ -33,13 +32,13 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderType type;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 2)
     private Double price;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 2)
     private Double quantity;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 2)
     private Double filledQuantity;
 
     @Column(nullable = false)
@@ -47,4 +46,5 @@ public class OrderEntity {
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<TradeEntity> trades;
+
 }

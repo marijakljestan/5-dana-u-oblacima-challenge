@@ -31,9 +31,9 @@ public class TradeEntity {
     @Column(nullable = false)
     private Date createdDateTime;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 2)
     private Double price;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 2)
     private Double quantity;
 }

@@ -1,4 +1,4 @@
-package com.hakaton.challenge.domain;
+package com.hakaton.challenge.api;
 
 import com.hakaton.challenge.dto.OrderDto;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderBookEntity {
+public class Orderbook {
 
     private List<OrderDto> buyOrders;
     private List<OrderDto> sellOrders;
