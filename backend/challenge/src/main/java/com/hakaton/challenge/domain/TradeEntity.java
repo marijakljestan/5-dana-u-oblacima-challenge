@@ -11,7 +11,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Trade {
+public class TradeEntity {
 
     private int id;
     private int buyOrderId;

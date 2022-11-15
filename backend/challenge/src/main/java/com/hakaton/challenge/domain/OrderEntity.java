@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Order {
+public class OrderEntity {
 
     private int id;
     private String currencyPair = "BTCUSD";
@@ -22,5 +22,5 @@ public class Order {
     private Double quantity;
     private Double filledQuantity;
     private OrderStatus orderStatus;
-    private List<Trade> trades;
+    private List<TradeEntity> trades;
 }
