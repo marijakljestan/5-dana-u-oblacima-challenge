@@ -26,12 +26,6 @@ public class OrderServiceImpl implements OrderService{
         //VALIDATE ORDER PRECISION, VALUTE ETC
         //REFACTOR WITH DEFAULT VALUES
         processOrderByType(order);
-
-        /*order.setFilledQuantity(0.0);
-        order.setOrderStatus(OrderStatus.OPEN);
-        order.setCreatedDateTime(new Date());
-        order.setTrades(new ArrayList<>());
-        OrderEntity orderEntity = saveOrder(order);*/
         return order;
     }
 
@@ -43,29 +37,45 @@ public class OrderServiceImpl implements OrderService{
     }
 
     private void processBuyOrder(Order order) {
-        OrderbookEntity orderBook = LoadOrderBook();
-        List<OrderDto> suitableOrders = orderBook.FindSuitableSellOrders(order.getPrice());
-        if(suitableOrders.isEmpty()) {
-            CreateNewOrder(order);
-            return;
-        }
-
-        double difference = order.getQuantity();
-        for(OrderDto dto: suitableOrders){
-            difference =  order.getQuantity() - dto.getQuantity();
-            if (difference < 0){
-                orderBook.DecreaseAmountOfSellOrder(order.getPrice(), Math.abs(difference));
+        OrderEntity newOrder = saveOrder(order);
+        List<OrderEntity> suitableSellOrders = orderRepository.findSuitableSellOrders(order.getPrice());
+        suitableSellOrders.sort(Comparator.comparingDouble(OrderEntity::getPrice));
+        double leftQuantity = order.getQuantity();
+        for(OrderEntity o : suitableSellOrders){
+            double oCapacity = o.getQuantity() - o.getFilledQuantity();
+            double difference = oCapacity - leftQuantity;
+            if(difference > 0){
+                o.setFilledQuantity(o.getFilledQuantity() + leftQuantity);
+                orderRepository.save(o);
+                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
+                TradeEntity trade = TradeEntity.builder()
+                        .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
+                        .createdDateTime(new Date()).price(o.getPrice()).quantity(leftQuantity).build();
+                newOrder.getTrades().add(trade);
+                leftQuantity = 0;
+            }
+            else if(difference <= 0) {
+                o.setFilledQuantity(o.getQuantity());
+                o.setOrderStatus(OrderStatus.CLOSED);
+                orderRepository.save(o);
+                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
+                TradeEntity trade = TradeEntity.builder()
+                        .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
+                        .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
+                        .build();
+                newOrder.getTrades().add(trade);
+                leftQuantity -= oCapacity;
+            }
+            if (leftQuantity == 0) {
+                newOrder.setOrderStatus(OrderStatus.CLOSED);
+                orderRepository.save(newOrder);
                 return;
             }
-
-            orderBook.RemoveSellOrderFromOrderbookWithPrice(dto.getPrice());
-            if(difference == 0)
-                return;
         }
-
-        if(difference > 0) {
-            order.setQuantity(difference);
-            CreateNewOrder(order);
+        if(leftQuantity > 0){
+            newOrder.setQuantity(leftQuantity);
+            newOrder.setFilledQuantity(0.0);
+            orderRepository.save(newOrder);
         }
     }
 
@@ -107,18 +117,9 @@ public class OrderServiceImpl implements OrderService{
             }
         }
         if(leftQuantity > 0){
-            newOrder.setQuantity(leftQuantity);
-            newOrder.setFilledQuantity(0.0);
-            orderRepository.save(newOrder);
+            order.setQuantity(leftQuantity);
+            saveOrder(order);
         }
-    }
-
-    private void CreateNewOrder(Order order) {
-        order.setFilledQuantity(0.0);
-        order.setOrderStatus(OrderStatus.OPEN);
-        order.setCreatedDateTime(new Date());
-        order.setTrades(new ArrayList<>());
-        OrderEntity orderEntity = saveOrder(order);
     }
 
     public OrderbookEntity LoadOrderBook(){
@@ -144,12 +145,12 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public void deleteAll() {
-        //DELETE TRADES -> CASCADE!!
         orderRepository.deleteAll();
     }
 
     private OrderEntity saveOrder(Order order) {
         OrderEntity orderEntity = modelMapper.map(order, OrderEntity.class);
+        orderEntity.setId(0);
         orderEntity.setOrderStatus(OrderStatus.OPEN);
         orderEntity.setCreatedDateTime(new Date());
         orderEntity.setTrades(new ArrayList<>());

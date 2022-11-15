@@ -66,50 +66,6 @@ public class OrderbookEntity {
             addNewSellOrder(order);
     }
 
-    public List<OrderDto> FindSuitableSellOrders(double price){
-        List<OrderDto> suitableOrders = new ArrayList<>();
-        for(OrderDto o: getSellOrders())
-            if(o.getPrice() <= price)
-                suitableOrders.add(o);
-
-        suitableOrders.sort(Comparator.comparingDouble(OrderDto::getPrice));
-        return suitableOrders;
-    }
-
-    public void DecreaseAmountOfSellOrder(double price, double ammount) {
-        for(OrderDto dto : sellOrders){
-            if(dto.getPrice().equals(price)){
-                Double formatted = BigDecimal.valueOf(ammount)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .doubleValue();
-                dto.setQuantity(formatted);
-                sellOrders.remove(dto);
-                sellOrders.add(dto);
-                sellOrders.sort(Comparator.comparingDouble(OrderDto::getPrice));
-                break;
-            }
-        }
-    }
-
-    public void RemoveSellOrderFromOrderbookWithPrice(double price) {
-        for(OrderDto dto: sellOrders){
-            if(dto.getPrice().equals(price)){
-                sellOrders.remove(dto);
-                break;
-            }
-        }
-    }
-
-    public List<OrderDto> FindSuitableBuyOrders(double price){
-        List<OrderDto> suitableOrders = new ArrayList<>();
-        for(OrderDto o: getBuyOrders())
-            if(o.getPrice() >= price)
-                suitableOrders.add(o);
-
-        suitableOrders.sort(Comparator.comparingDouble(OrderDto::getPrice).reversed());
-        return suitableOrders;
-    }
-
     private Boolean isSellOrderWithSamePriceInOrderBook(OrderEntity order){
         for(OrderDto o : sellOrders){
             if(o.getPrice().equals(order.getPrice()))
