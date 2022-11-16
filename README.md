@@ -21,17 +21,18 @@ Maven has been used as a build tool. Example of starting project build using Mav
 ### Technologies
 
 ## Intellij IDEA
-Intellij IDEA, developed by JetBrains, is an integrated development environment for developing software written in Java and other JVM and other JVM-based languages.\
-For this project development, I used IntelliJ IDEA 2022.2.3 version.
+Intellij IDEA, developed by JetBrains, is an integrated development environment for developing software written in Java and other JVM-based languages.\
+For this project, I used IntelliJ IDEA 2022.2.3 version.
 
 ## Java
+Java is the high-level, object-oriented, robust, secure, platform-independent, high performance and portable programming language.
+Java comes with its platform on which its code is executed. Java doesn't depend upon the operating system to be executed.\
 This software was written in Java version 11.\
-Java is the high-level, object-oriented, robust, secure programming language, platform-independent, high performance and portable programming language\
-JDK is an acronym for Java Development Kit. It is a software development environment which is used to develop Java applications and applets.\
 
 ## Spring Boot
 Spring Boot is a lightweight framework, built on top of the Spring framework.\
-It comes with many dependencies that can be plugged into the Spring application. (Spring Data, Spring Web, Spring Security etc)
+It comes with many dependencies that can be plugged into the Spring application. (Spring Data, Spring Web, Spring Security etc)\
+Spring Boot helps developers to get enterprise-grade applications up and running quickly without having to worry about configuring application correctly and safely.
 
 
 ## Maven
