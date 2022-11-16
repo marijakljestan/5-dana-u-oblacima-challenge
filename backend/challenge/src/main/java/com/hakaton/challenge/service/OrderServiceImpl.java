@@ -1,9 +1,8 @@
 package com.hakaton.challenge.service;
 
 import com.hakaton.challenge.api.Order;
-import com.hakaton.challenge.api.Trade;
 import com.hakaton.challenge.domain.*;
-import com.hakaton.challenge.dto.OrderDto;
+import com.hakaton.challenge.domain.OrderbookItem;
 import com.hakaton.challenge.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -131,8 +130,10 @@ public class OrderServiceImpl implements OrderService{
             else
                 orderBook.LoadSellOrder(order);
         }
-        orderBook.getBuyOrders().sort(Comparator.comparingDouble(OrderDto::getPrice).reversed());
-        orderBook.getSellOrders().sort(Comparator.comparingDouble(OrderDto::getPrice));
+        //orderBook.setBuyOrders(orderRepository.findActiveBuyOrders());
+        //orderBook.setSellOrders(orderRepository.findActiveSellOrders());
+        orderBook.getBuyOrders().sort(Comparator.comparingDouble(OrderbookItem::getPrice).reversed());
+        orderBook.getSellOrders().sort(Comparator.comparingDouble(OrderbookItem::getPrice));
         return orderBook;
     }
 
@@ -150,7 +151,6 @@ public class OrderServiceImpl implements OrderService{
 
     private OrderEntity saveOrder(Order order) {
         OrderEntity orderEntity = modelMapper.map(order, OrderEntity.class);
-        orderEntity.setId(0);
         orderEntity.setOrderStatus(OrderStatus.OPEN);
         orderEntity.setCreatedDateTime(new Date());
         orderEntity.setTrades(new ArrayList<>());

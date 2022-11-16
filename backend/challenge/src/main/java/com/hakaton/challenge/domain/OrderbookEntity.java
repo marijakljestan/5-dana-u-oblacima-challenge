@@ -1,6 +1,5 @@
 package com.hakaton.challenge.domain;
 
-import com.hakaton.challenge.dto.OrderDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Formatter;
 import java.util.List;
 
@@ -19,8 +17,8 @@ import java.util.List;
 @Builder
 public class OrderbookEntity {
 
-    private List<OrderDto> buyOrders = new ArrayList<>();
-    private List<OrderDto> sellOrders = new ArrayList<>();
+    private List<OrderbookItem> buyOrders = new ArrayList<>();
+    private List<OrderbookItem> sellOrders = new ArrayList<>();
 
     public static Formatter formatter = new Formatter();
 
@@ -33,7 +31,7 @@ public class OrderbookEntity {
     }
 
     private Boolean isBuyOrderWithSamePriceInOrderBook(OrderEntity order){
-        for(OrderDto o : buyOrders){
+        for(OrderbookItem o : buyOrders){
 
             if(o.getPrice().equals(order.getPrice()))
                 return true;
@@ -43,14 +41,14 @@ public class OrderbookEntity {
 
 
     private void addNewBuyOrder(OrderEntity order){
-        OrderDto newOrder = OrderDto.builder().price(order.getPrice()).quantity(order.getQuantity()).build();
+        OrderbookItem newOrder = OrderbookItem.builder().price(order.getPrice()).quantity(order.getQuantity() - order.getFilledQuantity()).build();
         buyOrders.add(newOrder);
     }
 
     private void accumulateBuyOrder(OrderEntity order){
-        for(OrderDto o: buyOrders)
+        for(OrderbookItem o: buyOrders)
             if(o.getPrice().equals(order.getPrice())){
-                Double newQuantity = o.getQuantity() + order.getQuantity();
+                Double newQuantity = o.getQuantity() + order.getQuantity() - order.getFilledQuantity();
                 Double formatted = BigDecimal.valueOf(newQuantity)
                         .setScale(2, RoundingMode.HALF_UP)
                         .doubleValue();
@@ -67,7 +65,7 @@ public class OrderbookEntity {
     }
 
     private Boolean isSellOrderWithSamePriceInOrderBook(OrderEntity order){
-        for(OrderDto o : sellOrders){
+        for(OrderbookItem o : sellOrders){
             if(o.getPrice().equals(order.getPrice()))
                 return true;
         }
@@ -75,14 +73,14 @@ public class OrderbookEntity {
     }
 
     private void addNewSellOrder(OrderEntity order){
-        OrderDto newOrder = OrderDto.builder().price(order.getPrice()).quantity(order.getQuantity()).build();
+        OrderbookItem newOrder = OrderbookItem.builder().price(order.getPrice()).quantity(order.getQuantity() - order.getFilledQuantity()).build();
         sellOrders.add(newOrder);
     }
 
     private void accumulateSellOrder(OrderEntity order){
-        for(OrderDto o: sellOrders)
+        for(OrderbookItem o: sellOrders)
             if(o.getPrice().equals(order.getPrice())){
-                Double newQuantity = o.getQuantity() + order.getQuantity();
+                Double newQuantity = o.getQuantity() + order.getQuantity() - order.getFilledQuantity();
                 Double formatted = BigDecimal.valueOf(newQuantity)
                         .setScale(2, RoundingMode.HALF_UP)
                         .doubleValue();

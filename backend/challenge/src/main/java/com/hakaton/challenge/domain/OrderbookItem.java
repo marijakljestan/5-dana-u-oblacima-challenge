@@ -1,4 +1,4 @@
-package com.hakaton.challenge.dto;
+package com.hakaton.challenge.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class OrderDto {
+public class OrderbookItem {
 
     private Double price;
     private Double quantity;

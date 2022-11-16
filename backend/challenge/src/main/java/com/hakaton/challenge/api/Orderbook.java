@@ -1,6 +1,6 @@
 package com.hakaton.challenge.api;
 
-import com.hakaton.challenge.dto.OrderDto;
+import com.hakaton.challenge.domain.OrderbookItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +14,6 @@ import java.util.List;
 @Builder
 public class Orderbook {
 
-    private List<OrderDto> buyOrders;
-    private List<OrderDto> sellOrders;
+    private List<OrderbookItem> buyOrders;
+    private List<OrderbookItem> sellOrders;
 }
