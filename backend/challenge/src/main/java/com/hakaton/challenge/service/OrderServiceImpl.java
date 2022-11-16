@@ -120,6 +120,10 @@ public class OrderServiceImpl implements OrderService{
         return modelMapper.map(orderEntity, Order.class);
     }
 
+    public OrderEntity findOrderById(Integer id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
     @Override
     public void deleteAll() {
         orderRepository.deleteAll();
