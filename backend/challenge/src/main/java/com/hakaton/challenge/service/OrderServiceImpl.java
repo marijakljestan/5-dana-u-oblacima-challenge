@@ -46,24 +46,26 @@ public class OrderServiceImpl implements OrderService{
             double difference = oCapacity - leftQuantity;
             if(difference > 0){
                 o.setFilledQuantity(o.getFilledQuantity() + leftQuantity);
-                orderRepository.save(o);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
                 TradeEntity trade = TradeEntity.builder()
                         .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
                         .createdDateTime(new Date()).price(o.getPrice()).quantity(leftQuantity).build();
                 newOrder.getTrades().add(trade);
+                o.getTrades().add(trade);
+                orderRepository.save(o);
                 leftQuantity = 0;
             }
             else if(difference <= 0) {
-                o.setFilledQuantity(o.getQuantity());
-                o.setOrderStatus(OrderStatus.CLOSED);
-                orderRepository.save(o);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
                 TradeEntity trade = TradeEntity.builder()
                         .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
                         .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
                         .build();
                 newOrder.getTrades().add(trade);
+                o.setFilledQuantity(o.getQuantity());
+                o.setOrderStatus(OrderStatus.CLOSED);
+                o.getTrades().add(trade);
+                orderRepository.save(o);
                 leftQuantity -= oCapacity;
             }
             if (leftQuantity == 0) {
@@ -90,24 +92,26 @@ public class OrderServiceImpl implements OrderService{
             double difference = oCapacity - leftQuantity;
             if(difference > 0){
                 o.setFilledQuantity(o.getFilledQuantity() + leftQuantity);
-                orderRepository.save(o);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
                 TradeEntity trade = TradeEntity.builder()
                                                 .buyOrderId(o.getId()).sellOrderId(newOrder.getId())
                                                 .createdDateTime(new Date()).price(o.getPrice()).quantity(leftQuantity).build();
                 newOrder.getTrades().add(trade);
+                o.getTrades().add(trade);
+                orderRepository.save(o);
                 leftQuantity = 0;
             }
             else if(difference <= 0) {
                 o.setFilledQuantity(o.getQuantity());
                 o.setOrderStatus(OrderStatus.CLOSED);
-                orderRepository.save(o);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
                 TradeEntity trade = TradeEntity.builder()
                                                .buyOrderId(o.getId()).sellOrderId(newOrder.getId())
                                                .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
                                                 .build();
                 newOrder.getTrades().add(trade);
+                o.getTrades().add(trade);
+                orderRepository.save(o);
                 leftQuantity -= oCapacity;
             }
             if (leftQuantity == 0) {
