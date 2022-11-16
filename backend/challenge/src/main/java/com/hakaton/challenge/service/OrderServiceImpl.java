@@ -18,62 +18,54 @@ public class OrderServiceImpl implements OrderService{
     private final ModelMapper modelMapper;
 
     @Override
-    public Order processOrder(Order order) {
+    public Order ProcessOrder(Order order) {
         order.setId(0);
-        OrderEntity createdOrder = processOrderByType(order);
+        OrderEntity createdOrder = processOrder(order);
         return modelMapper.map(createdOrder, Order.class);
     }
 
-    private OrderEntity processOrderByType(Order order) {
-        if(order.getType().equals(OrderType.BUY))
-            return processBuyOrder(order);
-        else
-            return processSellOrder(order);
-    }
 
-    private OrderEntity processBuyOrder(Order order) {
+    private OrderEntity processOrder(Order order) {
         OrderEntity newOrder = saveOrder(order);
-        List<OrderEntity> suitableSellOrders = orderRepository.findSuitableSellOrders(order.getPrice());
+        List<OrderEntity> suitableOrders = findSuitableOrders(order);
+
         double leftQuantity = order.getQuantity();
-        for(OrderEntity o : suitableSellOrders){
-            double oCapacity = o.getQuantity() - o.getFilledQuantity();
+        for(OrderEntity suitableOrder : suitableOrders){
+            double oCapacity = suitableOrder.getQuantity() - suitableOrder.getFilledQuantity();
             double difference = oCapacity - leftQuantity;
             if(difference > 0){
-                o.setFilledQuantity(o.getFilledQuantity() + leftQuantity);
+                suitableOrder.setFilledQuantity(suitableOrder.getFilledQuantity() + leftQuantity);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
-                TradeEntity trade = TradeEntity.builder()
-                        .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
-                        .createdDateTime(new Date()).price(o.getPrice()).quantity(leftQuantity).build();
+                TradeEntity trade = newOrder.getType().equals(OrderType.BUY)?
+                        createTradeWithSellOrder(newOrder, suitableOrder) : createTradeWithBuyOrder(suitableOrder, newOrder);
+                trade.setPrice(suitableOrder.getPrice());
+                trade.setQuantity(leftQuantity);
                 newOrder.getTrades().add(trade);
-                o.getTrades().add(trade);
-                orderRepository.save(o);
+                suitableOrder.getTrades().add(trade);
+                orderRepository.save(suitableOrder);
                 leftQuantity = 0;
             }
             else if(difference <= 0) {
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
-                TradeEntity trade = TradeEntity.builder()
-                        .sellOrderId(o.getId()).buyOrderId(newOrder.getId())
-                        .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
-                        .build();
+                TradeEntity trade = newOrder.getType().equals(OrderType.BUY)?
+                        createTradeWithSellOrder(newOrder, suitableOrder) : createTradeWithBuyOrder(suitableOrder, newOrder);
+                trade.setQuantity(oCapacity);
+                trade.setPrice(suitableOrder.getPrice());
                 newOrder.getTrades().add(trade);
                 orderRepository.save(newOrder);
-                o.setFilledQuantity(o.getQuantity());
-                o.setOrderStatus(OrderStatus.CLOSED);
-                o.getTrades().add(trade);
-                orderRepository.save(o);
+                suitableOrder.setFilledQuantity(suitableOrder.getQuantity());
+                suitableOrder.getTrades().add(trade);
+                closeOrder(suitableOrder);
                 leftQuantity -= oCapacity;
             }
-            if (leftQuantity == 0) {
-                newOrder.setOrderStatus(OrderStatus.CLOSED);
-                orderRepository.save(newOrder);
-                break;
-            }
+            if (leftQuantity == 0)
+                return closeOrder(newOrder);
+
         }
         if(leftQuantity > 0){
             if(newOrder.getFilledQuantity() == 0) return newOrder;
 
-            newOrder.setOrderStatus(OrderStatus.CLOSED);
-            orderRepository.save(newOrder);
+            closeOrder(newOrder);
             order.setId(0);
             order.setQuantity(leftQuantity);
             saveOrder(order);
@@ -81,55 +73,28 @@ public class OrderServiceImpl implements OrderService{
         return newOrder;
     }
 
+    private List<OrderEntity> findSuitableOrders (Order order) {
+        List<OrderEntity> suitableOrders = order.getType().equals(OrderType.BUY) ?
+                                                orderRepository.findSuitableSellOrders(order.getPrice()) :
+                                                orderRepository.findSuitableBuyOrders(order.getPrice());
+        return suitableOrders;
+    }
 
-    private OrderEntity processSellOrder(Order order) {
-        OrderEntity newOrder = saveOrder(order);
-        List<OrderEntity> suitableBuyOrders = orderRepository.findSuitableBuyOrders(order.getPrice());
-        double leftQuantity = order.getQuantity();
-        for(OrderEntity o : suitableBuyOrders){
-            double oCapacity = o.getQuantity() - o.getFilledQuantity();
-            double difference = oCapacity - leftQuantity;
-            if(difference > 0){
-                o.setFilledQuantity(o.getFilledQuantity() + leftQuantity);
-                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
-                TradeEntity trade = TradeEntity.builder()
-                                                .buyOrderId(o.getId()).sellOrderId(newOrder.getId())
-                                                .createdDateTime(new Date()).price(o.getPrice()).quantity(leftQuantity).build();
-                newOrder.getTrades().add(trade);
-                o.getTrades().add(trade);
-                orderRepository.save(o);
-                leftQuantity = 0;
-            }
-            else if(difference <= 0) {
-                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
-                TradeEntity trade = TradeEntity.builder()
-                                               .buyOrderId(o.getId()).sellOrderId(newOrder.getId())
-                                               .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
-                                                .build();
-                newOrder.getTrades().add(trade);
-                orderRepository.save(newOrder);
-                o.getTrades().add(trade);
-                o.setFilledQuantity(o.getQuantity());
-                o.setOrderStatus(OrderStatus.CLOSED);
-                orderRepository.save(o);
-                leftQuantity -= oCapacity;
-            }
-            if (leftQuantity == 0) {
-                newOrder.setOrderStatus(OrderStatus.CLOSED);
-                orderRepository.save(newOrder);
-                break;
-            }
-        }
-        if(leftQuantity > 0){
-            if(newOrder.getFilledQuantity() == 0) return newOrder;
+    private OrderEntity closeOrder(OrderEntity order) {
+        order.setOrderStatus(OrderStatus.CLOSED);
+        return orderRepository.save(order);
+    }
 
-            newOrder.setOrderStatus(OrderStatus.CLOSED);
-            orderRepository.save(newOrder);
-            order.setId(0);
-            order.setQuantity(leftQuantity);
-            saveOrder(order);
-        }
-        return newOrder;
+    private TradeEntity createTradeWithBuyOrder (OrderEntity buyOrder, OrderEntity sellOrder) {
+        return TradeEntity.builder()
+                .buyOrderId(buyOrder.getId()).sellOrderId(sellOrder.getId()).createdDateTime(new Date())
+                .build();
+    }
+
+    private TradeEntity createTradeWithSellOrder (OrderEntity buyOrder, OrderEntity sellOrder) {
+        return TradeEntity.builder()
+                .buyOrderId(buyOrder.getId()).sellOrderId(sellOrder.getId()).createdDateTime(new Date())
+                .build();
     }
 
     public OrderbookEntity LoadOrderBook(){

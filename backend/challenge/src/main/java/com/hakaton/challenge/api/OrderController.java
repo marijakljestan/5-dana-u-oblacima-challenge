@@ -20,7 +20,7 @@ public class OrderController {
         if(!order.IsValid())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order values!");
 
-        Order processedOrder = orderService.processOrder(order);
+        Order processedOrder = orderService.ProcessOrder(order);
         return new ResponseEntity<>(processedOrder, HttpStatus.CREATED);
     }
 
