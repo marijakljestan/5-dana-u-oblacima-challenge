@@ -8,10 +8,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -39,7 +36,6 @@ public class OrderServiceImpl implements OrderService{
     private void processBuyOrder(Order order) {
         OrderEntity newOrder = saveOrder(order);
         List<OrderEntity> suitableSellOrders = orderRepository.findSuitableSellOrders(order.getPrice());
-        suitableSellOrders.sort(Comparator.comparingDouble(OrderEntity::getPrice));
         double leftQuantity = order.getQuantity();
         for(OrderEntity o : suitableSellOrders){
             double oCapacity = o.getQuantity() - o.getFilledQuantity();
@@ -85,7 +81,6 @@ public class OrderServiceImpl implements OrderService{
     private void processSellOrder(Order order) {
         OrderEntity newOrder = saveOrder(order);
         List<OrderEntity> suitableBuyOrders = orderRepository.findSuitableBuyOrders(order.getPrice());
-        suitableBuyOrders.sort(Comparator.comparingDouble(OrderEntity::getPrice).reversed());
         double leftQuantity = order.getQuantity();
         for(OrderEntity o : suitableBuyOrders){
             double oCapacity = o.getQuantity() - o.getFilledQuantity();
