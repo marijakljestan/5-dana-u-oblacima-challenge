@@ -20,18 +20,18 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public Order processOrder(Order order) {
         order.setId(0);
-        processOrderByType(order);
-        return order;
+        OrderEntity createdOrder = processOrderByType(order);
+        return modelMapper.map(createdOrder, Order.class);
     }
 
-    private void processOrderByType(Order order) {
+    private OrderEntity processOrderByType(Order order) {
         if(order.getType().equals(OrderType.BUY))
-            processBuyOrder(order);
+            return processBuyOrder(order);
         else
-            processSellOrder(order);
+            return processSellOrder(order);
     }
 
-    private void processBuyOrder(Order order) {
+    private OrderEntity processBuyOrder(Order order) {
         OrderEntity newOrder = saveOrder(order);
         List<OrderEntity> suitableSellOrders = orderRepository.findSuitableSellOrders(order.getPrice());
         double leftQuantity = order.getQuantity();
@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService{
             if (leftQuantity == 0) {
                 newOrder.setOrderStatus(OrderStatus.CLOSED);
                 orderRepository.save(newOrder);
-                return;
+                break;
             }
         }
         if(leftQuantity > 0){
@@ -73,10 +73,11 @@ public class OrderServiceImpl implements OrderService{
             newOrder.setFilledQuantity(0.0);
             orderRepository.save(newOrder);
         }
+        return newOrder;
     }
 
 
-    private void processSellOrder(Order order) {
+    private OrderEntity processSellOrder(Order order) {
         OrderEntity newOrder = saveOrder(order);
         List<OrderEntity> suitableBuyOrders = orderRepository.findSuitableBuyOrders(order.getPrice());
         double leftQuantity = order.getQuantity();
@@ -110,13 +111,14 @@ public class OrderServiceImpl implements OrderService{
             if (leftQuantity == 0) {
                 newOrder.setOrderStatus(OrderStatus.CLOSED);
                 orderRepository.save(newOrder);
-                return;
+                break;
             }
         }
         if(leftQuantity > 0){
             order.setQuantity(leftQuantity);
             saveOrder(order);
         }
+        return newOrder;
     }
 
     public OrderbookEntity LoadOrderBook(){
