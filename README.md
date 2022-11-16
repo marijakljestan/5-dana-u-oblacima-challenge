@@ -1,7 +1,7 @@
 # 5-dana-u-oblacima-challenge
 
 #### Backend
-Backend is a Maven Spring Boot application. Source code is in the <i>./backend/challenge</i> folder. It can be started as a Java project in Eclipse or IntelliJ.\
+Backend is a Maven Spring Boot application. Source code and tests are in the <i>./backend/challenge/src</i> folder. Project can be started as a Java project in Eclipse or IntelliJ.\
 Server is running on port 8081.\
 PostgreSQL is needed for the backend. Connection parameters can be provided as environment variables in IntelliJ, or hard-coded in the <i>application.properties</i> file.
 
