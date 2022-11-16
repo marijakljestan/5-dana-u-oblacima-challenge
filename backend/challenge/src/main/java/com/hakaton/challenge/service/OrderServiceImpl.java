@@ -20,17 +20,15 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public Order ProcessOrder(Order order) {
-        order.setId(0);
-        OrderEntity createdOrder = processOrder(order);
+        OrderEntity newOrder = saveOrder(order);
+        OrderEntity createdOrder = processOrder(newOrder);
         return modelMapper.map(createdOrder, Order.class);
     }
 
+    private OrderEntity processOrder(OrderEntity newOrder) {
+        List<OrderEntity> suitableOrders = findSuitableOrders(newOrder);
 
-    private OrderEntity processOrder(Order order) {
-        OrderEntity newOrder = saveOrder(order);
-        List<OrderEntity> suitableOrders = findSuitableOrders(order);
-
-        double remainOrderQuantity = order.getQuantity();
+        double remainOrderQuantity = newOrder.getQuantity();
         for(OrderEntity suitableOrder : suitableOrders){
             double availableQuantityOfSuitableOrder = suitableOrder.getQuantity() - suitableOrder.getFilledQuantity();
             if(availableQuantityOfSuitableOrder > remainOrderQuantity){
@@ -41,23 +39,26 @@ public class OrderServiceImpl implements OrderService{
             } else {
                 suitableOrder.setFilledQuantity(suitableOrder.getQuantity());
                 CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(availableQuantityOfSuitableOrder).build();
-                createTrade(newTrade);
                 closeOrder(suitableOrder);
-                remainOrderQuantity -= availableQuantityOfSuitableOrder;
+                createTrade(newTrade);
+                remainOrderQuantity -= newTrade.getQuantity();
             }
-            if (remainOrderQuantity == 0)
-                return closeOrder(newOrder);
-
+            if (remainOrderQuantity == 0) return closeOrder(newOrder);
         }
-        if(remainOrderQuantity > 0){
-            if(newOrder.getFilledQuantity() == 0) return newOrder;
 
-            closeOrder(newOrder);
-            order.setId(0);
-            order.setQuantity(remainOrderQuantity);
-            saveOrder(order);
-        }
+        if(remainOrderQuantity > 0)
+            createNewOrderWithRemainingQuantity(newOrder, remainOrderQuantity);
+
         return newOrder;
+    }
+
+    private void createNewOrderWithRemainingQuantity(OrderEntity newOrder, double remainOrderQuantity) {
+        if(newOrder.getFilledQuantity() == 0) return;
+
+        closeOrder(newOrder);
+        Order orderWithRemainingQuantity = modelMapper.map(newOrder, Order.class);
+        orderWithRemainingQuantity.setQuantity(remainOrderQuantity);
+        saveOrder(modelMapper.map(orderWithRemainingQuantity, Order.class));
     }
 
     private void createTrade (CreateTradeDto tradeDto) {
@@ -84,7 +85,7 @@ public class OrderServiceImpl implements OrderService{
                 .build();
     }
 
-    private List<OrderEntity> findSuitableOrders (Order order) {
+    private List<OrderEntity> findSuitableOrders (OrderEntity order) {
         List<OrderEntity> suitableOrders = order.getType().equals(OrderType.BUY) ?
                                                 orderRepository.findSuitableSellOrders(order.getPrice()) :
                                                 orderRepository.findSuitableBuyOrders(order.getPrice());
@@ -128,6 +129,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     private OrderEntity saveOrder(Order order) {
+        order.setId(0);
         OrderEntity orderEntity = modelMapper.map(order, OrderEntity.class);
         orderEntity.setOrderStatus(OrderStatus.OPEN);
         orderEntity.setCreatedDateTime(new Date());
