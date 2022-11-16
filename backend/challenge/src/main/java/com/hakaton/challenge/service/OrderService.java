@@ -8,7 +8,7 @@ public interface OrderService {
 
     OrderbookEntity LoadOrderBook();
 
-    Order getOrderById(Integer id);
+    Order FindOrderById(Integer id);
 
     void deleteAll();
 }

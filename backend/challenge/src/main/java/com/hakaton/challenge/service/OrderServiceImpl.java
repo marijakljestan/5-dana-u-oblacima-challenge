@@ -140,8 +140,8 @@ public class OrderServiceImpl implements OrderService{
 
 
     @Override
-    public Order getOrderById(Integer id) {
-        OrderEntity orderEntity = orderRepository.findById(id).get();
+    public Order FindOrderById(Integer id) {
+        OrderEntity orderEntity = orderRepository.fetchWithTrades(id);
         return modelMapper.map(orderEntity, Order.class);
     }
 

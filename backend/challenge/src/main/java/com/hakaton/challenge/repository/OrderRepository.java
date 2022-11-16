@@ -9,6 +9,9 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
 
+    @Query(value = "select o from OrderEntity o left join fetch o.trades where o.id = ?1")
+    OrderEntity fetchWithTrades(int orderId);
+
     @Query(value = "select o from OrderEntity o where o.orderStatus = 0")
     List<OrderEntity> findActiveOrders();
 
