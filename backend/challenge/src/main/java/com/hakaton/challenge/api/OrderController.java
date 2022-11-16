@@ -17,10 +17,10 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> processOrder(@RequestBody Order order){
-        Order processedOrder = orderService.processOrder(order);
-        if(processedOrder == null)
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Error processing order!");
+        if(!order.IsValid())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid order values!");
 
+        Order processedOrder = orderService.ProcessOrder(order);
         return new ResponseEntity<>(processedOrder, HttpStatus.CREATED);
     }
 

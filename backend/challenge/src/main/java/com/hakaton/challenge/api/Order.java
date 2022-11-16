@@ -25,4 +25,18 @@ public class Order {
     private Double filledQuantity;
     private OrderStatus orderStatus;
     private List<Trade> trades;
+
+    public Boolean IsValid() {
+        if(isCurrencyValid() && isQuantityValid() && isPriceValid() && isTypeValid())
+            return true;
+        return false;
+    }
+
+    private boolean isPriceValid() { return price > 0.0; }
+
+    private boolean isTypeValid() { return type.equals(OrderType.BUY) || type.equals(OrderType.SELL); }
+
+    private boolean isQuantityValid() { return quantity > 0.0; }
+
+    private boolean isCurrencyValid() { return currencyPair.equals("BTCUSD"); }
 }
