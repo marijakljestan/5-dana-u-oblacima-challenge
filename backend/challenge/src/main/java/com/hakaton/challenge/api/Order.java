@@ -34,7 +34,10 @@ public class Order {
 
     private boolean isPriceValid() { return price > 0.0; }
 
-    private boolean isTypeValid() { return type.equals(OrderType.BUY) || type.equals(OrderType.SELL); }
+    private boolean isTypeValid() {
+        //EnumUtils.isValidEnum(OrderType.class, this.type) ? OrderType.valueOf(this.type) : null;
+        return type.equals(OrderType.BUY) || type.equals(OrderType.SELL);
+    }
 
     private boolean isQuantityValid() { return quantity > 0.0; }
 

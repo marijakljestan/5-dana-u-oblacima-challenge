@@ -3,6 +3,7 @@ package com.hakaton.challenge.service;
 import com.hakaton.challenge.api.Order;
 import com.hakaton.challenge.domain.*;
 import com.hakaton.challenge.domain.OrderbookItem;
+import com.hakaton.challenge.dto.CreateTradeDto;
 import com.hakaton.challenge.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -29,60 +30,46 @@ public class OrderServiceImpl implements OrderService{
         OrderEntity newOrder = saveOrder(order);
         List<OrderEntity> suitableOrders = findSuitableOrders(order);
 
-        double leftQuantity = order.getQuantity();
+        double remainOrderQuantity = order.getQuantity();
         for(OrderEntity suitableOrder : suitableOrders){
-            double oCapacity = suitableOrder.getQuantity() - suitableOrder.getFilledQuantity();
-            double difference = oCapacity - leftQuantity;
-            if(difference > 0){
-                suitableOrder.setFilledQuantity(suitableOrder.getFilledQuantity() + leftQuantity);
-                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + leftQuantity);
-                TradeEntity trade = newOrder.getType().equals(OrderType.BUY)?
-                        createTradeWithSellOrder(newOrder, suitableOrder) : createTradeWithBuyOrder(suitableOrder, newOrder);
-                trade.setPrice(suitableOrder.getPrice());
-                trade.setQuantity(leftQuantity);
-                newOrder.getTrades().add(trade);
-                suitableOrder.getTrades().add(trade);
-                orderRepository.save(suitableOrder);
-                leftQuantity = 0;
-            }
-            else if(difference <= 0) {
-                newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
-                TradeEntity trade = newOrder.getType().equals(OrderType.BUY)?
-                        createTradeWithSellOrder(newOrder, suitableOrder) : createTradeWithBuyOrder(suitableOrder, newOrder);
-                trade.setQuantity(oCapacity);
-                trade.setPrice(suitableOrder.getPrice());
-                newOrder.getTrades().add(trade);
-                orderRepository.save(newOrder);
+            double availableQuantityOfSuitableOrder = suitableOrder.getQuantity() - suitableOrder.getFilledQuantity();
+            if(availableQuantityOfSuitableOrder > remainOrderQuantity){
+                suitableOrder.setFilledQuantity(suitableOrder.getFilledQuantity() + remainOrderQuantity);
+                CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(remainOrderQuantity).build();
+                createTrade(newTrade);
+                remainOrderQuantity = 0;
+            } else {
                 suitableOrder.setFilledQuantity(suitableOrder.getQuantity());
-                suitableOrder.getTrades().add(trade);
+                CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(availableQuantityOfSuitableOrder).build();
+                createTrade(newTrade);
                 closeOrder(suitableOrder);
-                leftQuantity -= oCapacity;
+                remainOrderQuantity -= availableQuantityOfSuitableOrder;
             }
-            if (leftQuantity == 0)
+            if (remainOrderQuantity == 0)
                 return closeOrder(newOrder);
 
         }
-        if(leftQuantity > 0){
+        if(remainOrderQuantity > 0){
             if(newOrder.getFilledQuantity() == 0) return newOrder;
 
             closeOrder(newOrder);
             order.setId(0);
-            order.setQuantity(leftQuantity);
+            order.setQuantity(remainOrderQuantity);
             saveOrder(order);
         }
         return newOrder;
     }
 
-    private List<OrderEntity> findSuitableOrders (Order order) {
-        List<OrderEntity> suitableOrders = order.getType().equals(OrderType.BUY) ?
-                                                orderRepository.findSuitableSellOrders(order.getPrice()) :
-                                                orderRepository.findSuitableBuyOrders(order.getPrice());
-        return suitableOrders;
-    }
-
-    private OrderEntity closeOrder(OrderEntity order) {
-        order.setOrderStatus(OrderStatus.CLOSED);
-        return orderRepository.save(order);
+    private void createTrade (CreateTradeDto tradeDto) {
+        TradeEntity trade = tradeDto.getNewOrder().getType().equals(OrderType.BUY)?
+                createTradeWithSellOrder(tradeDto.getNewOrder(), tradeDto.getExistingOrder()) : createTradeWithBuyOrder(tradeDto.getExistingOrder(), tradeDto.getNewOrder());
+        trade.setQuantity(tradeDto.getQuantity());
+        trade.setPrice(tradeDto.getExistingOrder().getPrice());
+        tradeDto.getNewOrder().setFilledQuantity(tradeDto.getNewOrder().getFilledQuantity() + trade.getQuantity());
+        tradeDto.getNewOrder().getTrades().add(trade);
+        orderRepository.save(tradeDto.getNewOrder());
+        tradeDto.getExistingOrder().getTrades().add(trade);
+        orderRepository.save(tradeDto.getExistingOrder());
     }
 
     private TradeEntity createTradeWithBuyOrder (OrderEntity buyOrder, OrderEntity sellOrder) {
@@ -97,6 +84,18 @@ public class OrderServiceImpl implements OrderService{
                 .build();
     }
 
+    private List<OrderEntity> findSuitableOrders (Order order) {
+        List<OrderEntity> suitableOrders = order.getType().equals(OrderType.BUY) ?
+                                                orderRepository.findSuitableSellOrders(order.getPrice()) :
+                                                orderRepository.findSuitableBuyOrders(order.getPrice());
+        return suitableOrders;
+    }
+
+    private OrderEntity closeOrder(OrderEntity order) {
+        order.setOrderStatus(OrderStatus.CLOSED);
+        return orderRepository.save(order);
+    }
+
     public OrderbookEntity LoadOrderBook(){
         OrderbookEntity orderBook = new OrderbookEntity();
         List<OrderEntity> orders = orderRepository.findActiveOrders();
@@ -106,8 +105,7 @@ public class OrderServiceImpl implements OrderService{
             else
                 orderBook.LoadSellOrder(order);
         }
-        //orderBook.setBuyOrders(orderRepository.findActiveBuyOrders());
-        //orderBook.setSellOrders(orderRepository.findActiveSellOrders());
+
         orderBook.getBuyOrders().sort(Comparator.comparingDouble(OrderbookItem::getPrice).reversed());
         orderBook.getSellOrders().sort(Comparator.comparingDouble(OrderbookItem::getPrice));
         return orderBook;

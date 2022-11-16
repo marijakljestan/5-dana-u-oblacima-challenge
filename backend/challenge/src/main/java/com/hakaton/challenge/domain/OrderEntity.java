@@ -44,7 +44,7 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<TradeEntity> trades;
 
 }
