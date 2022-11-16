@@ -112,7 +112,6 @@ public class OrderServiceImpl implements OrderService{
         return orderBook;
     }
 
-
     @Override
     public Order FindOrderById(Integer id) {
         OrderEntity orderEntity = orderRepository.fetchWithTrades(id);
@@ -124,9 +123,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public void deleteAll() {
-        orderRepository.deleteAll();
-    }
+    public void deleteAll() { orderRepository.deleteAll(); }
 
     private OrderEntity saveOrder(Order order) {
         order.setId(0);
