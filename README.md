@@ -14,13 +14,13 @@ PostgreSQL is needed for the backend. Connection parameters can be provided as e
 
 If Maven doesn't recognize dependencies in <i>pom.xml</i> file:\
 Right click on the pom.xml -> Maven -> Reload project.
-![alt text](https://github.com/marijakljestan/5-dana-u-oblacima-challenge/blob/readme/maven-build.PNG?raw=true)
+![alt text](https://github.com/marijakljestan/5-dana-u-oblacima-challenge/blob/readme/reload-project.PNG?raw=true)
 
 Maven has been used as a build tool. Example of starting project build using Maven is shown on screenshot bellow.
 ![alt text](https://github.com/marijakljestan/5-dana-u-oblacima-challenge/blob/readme/maven-build.PNG?raw=true)
 
 ## Run project
-![alt text](https://github.com/marijakljestan/5-dana-u-oblacima-challenge/blob/readme/reload-project.PNG?raw=true)
+![alt text](https://github.com/marijakljestan/5-dana-u-oblacima-challenge/blob/readme/run-application.PNG?raw=true)
 
 ### Technologies
 
