@@ -56,6 +56,7 @@ public class OrderServiceImpl implements OrderService{
                         .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
                         .build();
                 newOrder.getTrades().add(trade);
+                orderRepository.save(newOrder);
                 o.setFilledQuantity(o.getQuantity());
                 o.setOrderStatus(OrderStatus.CLOSED);
                 o.getTrades().add(trade);
@@ -69,9 +70,13 @@ public class OrderServiceImpl implements OrderService{
             }
         }
         if(leftQuantity > 0){
-            newOrder.setQuantity(leftQuantity);
-            newOrder.setFilledQuantity(0.0);
+            if(newOrder.getFilledQuantity() == 0) return newOrder;
+
+            newOrder.setOrderStatus(OrderStatus.CLOSED);
             orderRepository.save(newOrder);
+            order.setId(0);
+            order.setQuantity(leftQuantity);
+            saveOrder(order);
         }
         return newOrder;
     }
@@ -96,15 +101,16 @@ public class OrderServiceImpl implements OrderService{
                 leftQuantity = 0;
             }
             else if(difference <= 0) {
-                o.setFilledQuantity(o.getQuantity());
-                o.setOrderStatus(OrderStatus.CLOSED);
                 newOrder.setFilledQuantity(newOrder.getFilledQuantity() + oCapacity);
                 TradeEntity trade = TradeEntity.builder()
                                                .buyOrderId(o.getId()).sellOrderId(newOrder.getId())
                                                .createdDateTime(new Date()).price(o.getPrice()).quantity(oCapacity)
                                                 .build();
                 newOrder.getTrades().add(trade);
+                orderRepository.save(newOrder);
                 o.getTrades().add(trade);
+                o.setFilledQuantity(o.getQuantity());
+                o.setOrderStatus(OrderStatus.CLOSED);
                 orderRepository.save(o);
                 leftQuantity -= oCapacity;
             }
@@ -115,6 +121,11 @@ public class OrderServiceImpl implements OrderService{
             }
         }
         if(leftQuantity > 0){
+            if(newOrder.getFilledQuantity() == 0) return newOrder;
+
+            newOrder.setOrderStatus(OrderStatus.CLOSED);
+            orderRepository.save(newOrder);
+            order.setId(0);
             order.setQuantity(leftQuantity);
             saveOrder(order);
         }
