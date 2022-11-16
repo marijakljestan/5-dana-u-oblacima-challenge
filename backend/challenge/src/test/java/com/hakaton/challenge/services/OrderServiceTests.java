@@ -32,7 +32,6 @@ public class OrderServiceTests {
     @Mock
     private OrderEntity orderEntityMock;
 
-
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -53,5 +52,4 @@ public class OrderServiceTests {
         verify(orderRepositoryMock, times(1)).findById(OrderConstants.DB_ORDER_ID);
         verifyNoMoreInteractions(orderRepositoryMock);
     }
-
 }
