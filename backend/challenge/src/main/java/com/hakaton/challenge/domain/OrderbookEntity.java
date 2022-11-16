@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
 
 @Data
@@ -20,8 +19,6 @@ public class OrderbookEntity {
     private List<OrderbookItem> buyOrders = new ArrayList<>();
     private List<OrderbookItem> sellOrders = new ArrayList<>();
 
-    public static Formatter formatter = new Formatter();
-
 
     public void LoadBuyOrder(OrderEntity order){
         if(isBuyOrderWithSamePriceInOrderBook(order))
@@ -32,7 +29,6 @@ public class OrderbookEntity {
 
     private Boolean isBuyOrderWithSamePriceInOrderBook(OrderEntity order){
         for(OrderbookItem o : buyOrders){
-
             if(o.getPrice().equals(order.getPrice()))
                 return true;
         }
@@ -49,9 +45,7 @@ public class OrderbookEntity {
         for(OrderbookItem o: buyOrders)
             if(o.getPrice().equals(order.getPrice())){
                 Double newQuantity = o.getQuantity() + order.getQuantity() - order.getFilledQuantity();
-                Double formatted = BigDecimal.valueOf(newQuantity)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .doubleValue();
+                Double formatted = BigDecimal.valueOf(newQuantity).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 o.setQuantity(formatted);
                 break;
             }
@@ -81,9 +75,7 @@ public class OrderbookEntity {
         for(OrderbookItem o: sellOrders)
             if(o.getPrice().equals(order.getPrice())){
                 Double newQuantity = o.getQuantity() + order.getQuantity() - order.getFilledQuantity();
-                Double formatted = BigDecimal.valueOf(newQuantity)
-                        .setScale(2, RoundingMode.HALF_UP)
-                        .doubleValue();
+                Double formatted = BigDecimal.valueOf(newQuantity).setScale(2, RoundingMode.HALF_UP).doubleValue();
                 o.setQuantity(formatted);
                 break;
             }
