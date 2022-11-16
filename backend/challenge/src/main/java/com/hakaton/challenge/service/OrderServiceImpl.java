@@ -31,18 +31,18 @@ public class OrderServiceImpl implements OrderService{
         double remainOrderQuantity = newOrder.getQuantity();
         for(OrderEntity suitableOrder : suitableOrders){
             double availableQuantityOfSuitableOrder = suitableOrder.getQuantity() - suitableOrder.getFilledQuantity();
+            double tradeQuantity = 0.0;
             if(availableQuantityOfSuitableOrder > remainOrderQuantity){
                 suitableOrder.setFilledQuantity(suitableOrder.getFilledQuantity() + remainOrderQuantity);
-                CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(remainOrderQuantity).build();
-                createTrade(newTrade);
-                remainOrderQuantity = 0;
+                tradeQuantity = remainOrderQuantity;
             } else {
                 suitableOrder.setFilledQuantity(suitableOrder.getQuantity());
-                CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(availableQuantityOfSuitableOrder).build();
+                tradeQuantity = availableQuantityOfSuitableOrder;
                 closeOrder(suitableOrder);
-                createTrade(newTrade);
-                remainOrderQuantity -= newTrade.getQuantity();
             }
+            CreateTradeDto newTrade = CreateTradeDto.builder().newOrder(newOrder).existingOrder(suitableOrder).quantity(tradeQuantity).build();
+            createTrade(newTrade);
+            remainOrderQuantity -= tradeQuantity;
             if (remainOrderQuantity == 0) return closeOrder(newOrder);
         }
 
