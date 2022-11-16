@@ -24,6 +24,7 @@ public class OrderServiceImpl implements OrderService{
     public Order processOrder(Order order) {
         //VALIDATE ORDER PRECISION, VALUTE ETC
         //REFACTOR WITH DEFAULT VALUES
+        order.setId(0);
         processOrderByType(order);
         return order;
     }
