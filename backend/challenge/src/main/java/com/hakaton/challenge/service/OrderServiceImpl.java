@@ -25,7 +25,7 @@ public class OrderServiceImpl implements OrderService{
         return modelMapper.map(createdOrder, Order.class);
     }
 
-    private OrderEntity processOrder(OrderEntity newOrder) {
+    public OrderEntity processOrder(OrderEntity newOrder) {
         List<OrderEntity> suitableOrders = findSuitableOrders(newOrder);
 
         double remainOrderQuantity = newOrder.getQuantity();
