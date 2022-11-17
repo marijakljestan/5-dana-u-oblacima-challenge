@@ -4,7 +4,9 @@ import com.hakaton.challenge.api.Order;
 import com.hakaton.challenge.domain.*;
 import com.hakaton.challenge.domain.OrderbookItem;
 import com.hakaton.challenge.dto.CreateTradeDto;
+import com.hakaton.challenge.exception.OrderNotFoundException;
 import com.hakaton.challenge.repository.OrderRepository;
+import com.hakaton.challenge.repository.TradeRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -16,7 +18,10 @@ import java.util.*;
 public class OrderServiceImpl implements OrderService{
 
     private final OrderRepository orderRepository;
+
+    private final TradeRepository tradeRepository;
     private final ModelMapper modelMapper;
+
 
     @Override
     public Order ProcessOrder(Order order) {
@@ -49,6 +54,7 @@ public class OrderServiceImpl implements OrderService{
         if(remainOrderQuantity > 0)
             createNewOrderWithRemainingQuantity(newOrder, remainOrderQuantity);
 
+        newOrder.setTrades(tradeRepository.fetchTradesByOrder(newOrder.getId()));
         return newOrder;
     }
 
@@ -66,10 +72,9 @@ public class OrderServiceImpl implements OrderService{
                 createTradeWithSellOrder(tradeDto.getNewOrder(), tradeDto.getExistingOrder()) : createTradeWithBuyOrder(tradeDto.getExistingOrder(), tradeDto.getNewOrder());
         trade.setQuantity(tradeDto.getQuantity());
         trade.setPrice(tradeDto.getExistingOrder().getPrice());
+        tradeRepository.save(trade);
         tradeDto.getNewOrder().setFilledQuantity(tradeDto.getNewOrder().getFilledQuantity() + trade.getQuantity());
-        tradeDto.getNewOrder().getTrades().add(trade);
         orderRepository.save(tradeDto.getNewOrder());
-        tradeDto.getExistingOrder().getTrades().add(trade);
         orderRepository.save(tradeDto.getExistingOrder());
     }
 
@@ -94,7 +99,9 @@ public class OrderServiceImpl implements OrderService{
 
     private OrderEntity closeOrder(OrderEntity order) {
         order.setOrderStatus(OrderStatus.CLOSED);
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        order.setTrades(tradeRepository.fetchTradesByOrder(order.getId()));
+        return order;
     }
 
     public OrderbookEntity LoadOrderBook(){
@@ -113,13 +120,19 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public Order FindOrderById(Integer id) {
+    public Order FetchOrderByIdWithTrades(Integer id) {
         OrderEntity orderEntity = orderRepository.fetchWithTrades(id);
+        if(orderEntity == null) throw new OrderNotFoundException();
+        orderEntity.setTrades(tradeRepository.fetchTradesByOrder(id));
         return modelMapper.map(orderEntity, Order.class);
     }
 
     public OrderEntity findOrderById(Integer id) {
-        return orderRepository.findById(id).orElse(null);
+        Optional<OrderEntity> order = orderRepository.findById(id);
+        if(order.isPresent())
+            return order.get();
+
+        throw new OrderNotFoundException();
     }
 
     @Override
