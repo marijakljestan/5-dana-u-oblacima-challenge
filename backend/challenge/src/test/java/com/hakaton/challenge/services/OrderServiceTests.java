@@ -1,11 +1,9 @@
 package com.hakaton.challenge.services;
 
 import com.hakaton.challenge.constants.OrderConstants;
-import com.hakaton.challenge.domain.OrderEntity;
-import com.hakaton.challenge.domain.OrderStatus;
-import com.hakaton.challenge.domain.OrderType;
-import com.hakaton.challenge.domain.OrderbookEntity;
+import com.hakaton.challenge.domain.*;
 import com.hakaton.challenge.repository.OrderRepository;
+import com.hakaton.challenge.repository.TradeRepository;
 import com.hakaton.challenge.service.OrderServiceImpl;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +35,9 @@ public class OrderServiceTests {
     private OrderRepository orderRepositoryMock;
 
     @Mock
+    private TradeRepository tradeRepositoryMock;
+
+    @Mock
     private OrderEntity orderEntityMock;
 
     @InjectMocks
@@ -50,15 +52,16 @@ public class OrderServiceTests {
     public void testProcessBuyOrder() {
         List<OrderEntity> orders = getSellOrdersForProcessing();
         OrderEntity newOrderEntity = OrderEntity.builder().type(OrderType.BUY).price(9.0).quantity(50.0).currencyPair(DB_CURRENCY_PAIR).orderStatus(OrderStatus.OPEN).filledQuantity(0.0).trades(new ArrayList<>()).build();
+        TradeEntity tradeEntity = TradeEntity.builder().buyOrderId(newOrderEntity.getId()).build();
 
         when(orderRepositoryMock.findSuitableSellOrders(newOrderEntity.getPrice())).thenReturn(orders);
         when(orderRepositoryMock.save(newOrderEntity)).thenReturn(newOrderEntity);
+        when(tradeRepositoryMock.fetchTradesByOrder(newOrderEntity.getId())).thenReturn(Arrays.asList(tradeEntity));
 
         OrderEntity processedOrder = orderService.processOrder(newOrderEntity);
 
         Assert.assertEquals(processedOrder.getOrderStatus(), OrderStatus.CLOSED);
         Assert.assertEquals(Optional.ofNullable(processedOrder.getFilledQuantity()), Optional.of(50.0));
-        Assert.assertEquals(Optional.ofNullable(processedOrder.getTrades().size()), Optional.of(1));
         verify(orderRepositoryMock, times(1)).findSuitableSellOrders(newOrderEntity.getPrice());
     }
 
@@ -66,15 +69,16 @@ public class OrderServiceTests {
     public void testProcessSellOrder() {
         List<OrderEntity> orders = getBuyOrdersForProcessing();
         OrderEntity newOrderEntity = OrderEntity.builder().type(OrderType.SELL).price(7.0).quantity(100.0).currencyPair(DB_CURRENCY_PAIR).orderStatus(OrderStatus.OPEN).filledQuantity(0.0).trades(new ArrayList<>()).build();
+        TradeEntity tradeEntity = TradeEntity.builder().sellOrderId(newOrderEntity.getId()).build();
 
         when(orderRepositoryMock.findSuitableBuyOrders(newOrderEntity.getPrice())).thenReturn(orders);
         when(orderRepositoryMock.save(newOrderEntity)).thenReturn(newOrderEntity);
+        when(tradeRepositoryMock.fetchTradesByOrder(newOrderEntity.getId())).thenReturn(Arrays.asList(tradeEntity));
 
         OrderEntity processedOrder = orderService.processOrder(newOrderEntity);
 
         Assert.assertEquals(processedOrder.getOrderStatus(), OrderStatus.CLOSED);
         Assert.assertEquals(Optional.ofNullable(processedOrder.getFilledQuantity()), Optional.of(100.0));
-        Assert.assertEquals(Optional.ofNullable(processedOrder.getTrades().size()), Optional.of(1));
     }
 
     @Test

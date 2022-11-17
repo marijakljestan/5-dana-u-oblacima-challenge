@@ -2,6 +2,7 @@ package com.hakaton.challenge.api;
 
 import com.hakaton.challenge.domain.OrderStatus;
 import com.hakaton.challenge.domain.OrderType;
+import com.hakaton.challenge.exception.InvalidOrderTypeException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -36,7 +37,10 @@ public class Order {
 
     private boolean isTypeValid() {
         //EnumUtils.isValidEnum(OrderType.class, this.type) ? OrderType.valueOf(this.type) : null;
-        return type.equals(OrderType.BUY) || type.equals(OrderType.SELL);
+        if(type.equals(OrderType.BUY) || type.equals(OrderType.SELL))
+            return true;
+
+        throw new InvalidOrderTypeException();
     }
 
     private boolean isQuantityValid() { return quantity > 0.0; }

@@ -26,7 +26,7 @@ public class OrderController {
 
     @GetMapping(value = "/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Order> getOrderById(@PathVariable("id") Integer id) {
-        Order order = orderService.FindOrderById(id);
+        Order order = orderService.FetchOrderByIdWithTrades(id);
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
 
