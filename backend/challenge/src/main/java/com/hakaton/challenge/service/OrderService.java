@@ -6,7 +6,7 @@ import com.hakaton.challenge.domain.OrderbookEntity;
 public interface OrderService {
     Order ProcessOrder(Order order);
 
-    OrderbookEntity LoadOrderBook();
+    OrderbookEntity LoadOrderBook(String pair);
 
     Order FetchOrderByIdWithTrades(Integer id);
 

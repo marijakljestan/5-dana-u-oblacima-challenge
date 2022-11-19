@@ -12,16 +12,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
     @Query(value = "select o from OrderEntity o left join fetch o.trades where o.id = ?1")
     OrderEntity fetchWithTrades(int orderId);
 
-    @Query(value = "select o from OrderEntity o where o.orderStatus = 0")
-    List<OrderEntity> findActiveOrders();
+    @Query(value = "select o from OrderEntity o where o.orderStatus = 0 and where o.currencyPair = ?1")
+    List<OrderEntity> findActiveOrders(String pair);
 
-    @Query(value = "select o from OrderEntity o left join fetch o.trades where o.orderStatus = 0 and o.type = 0 and o.price >= ?1 " +
+    @Query(value = "select o from OrderEntity o left join fetch o.trades where o.orderStatus = 0 and o.type = 0 and o.price >= ?1 and o.currencyPair = ?2" +
                    "order by o.price desc, o.createdDateTime")
-    List<OrderEntity> findSuitableBuyOrders(double price);
+    List<OrderEntity> findSuitableBuyOrders(double price, String currencyPair);
 
-    @Query(value = "select o from OrderEntity o left join fetch o.trades where o.orderStatus = 0 and o.type = 1 and o.price <= ?1 " +
+    @Query(value = "select o from OrderEntity o left join fetch o.trades where o.orderStatus = 0 and o.type = 1 and o.price <= ?1 and o.currencyPair = ?2 " +
                     "order by o.price, o.createdDateTime")
-    List<OrderEntity> findSuitableSellOrders(double price);
+    List<OrderEntity> findSuitableSellOrders(double price, String currencyPair);
 
     @Query(value = "select new com.hakaton.challenge.domain.OrderbookItem(o.price, sum(o.quantity)) " +
                   "from OrderEntity  o where o.orderStatus = 0 and o.type = 0 group by o.price")

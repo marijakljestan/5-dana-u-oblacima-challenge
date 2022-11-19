@@ -94,8 +94,8 @@ public class OrderServiceImpl implements OrderService{
 
     private List<OrderEntity> findSuitableOrders (OrderEntity order) {
         List<OrderEntity> suitableOrders = order.getType().equals(OrderType.BUY) ?
-                                                orderRepository.findSuitableSellOrders(order.getPrice()) :
-                                                orderRepository.findSuitableBuyOrders(order.getPrice());
+                                                orderRepository.findSuitableSellOrders(order.getPrice(),order.getCurrencyPair()) :
+                                                orderRepository.findSuitableBuyOrders(order.getPrice(),order.getCurrencyPair());
         return suitableOrders;
     }
 
@@ -106,9 +106,9 @@ public class OrderServiceImpl implements OrderService{
         return order;
     }
 
-    public OrderbookEntity LoadOrderBook(){
+    public OrderbookEntity LoadOrderBook(String pair){
         OrderbookEntity orderBook = new OrderbookEntity();
-        List<OrderEntity> orders = orderRepository.findActiveOrders();
+        List<OrderEntity> orders = orderRepository.findActiveOrders(pair);
         for(OrderEntity order : orders){
             if(order.getType().equals(OrderType.BUY))
                 orderBook.LoadBuyOrder(order);
