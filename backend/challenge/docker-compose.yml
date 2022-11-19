@@ -18,8 +18,6 @@ services:
       #AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     depends_on: 
       - challenge_db
-    networks:
-      - challenge
     
   challenge_db:
     image: postgres:14.1
@@ -30,5 +28,3 @@ services:
        POSTGRES_PASSWORD: ${CHALLENGE_DB_PASSWORD}
        POSTGRES_DB: ${CHALLENGE_DB_NAME}
        POSTGRES_HOST: ${CHALLENGE_DB_HOST}
-    networks:
-      - challenge
