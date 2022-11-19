@@ -27,11 +27,18 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public Order ProcessOrder(Order order) {
+
         OrderEntity newOrder = saveOrder(order);
         OrderEntity createdOrder = processOrder(newOrder);
         return modelMapper.map(createdOrder, Order.class);
     }
 
+    private boolean doesUserExist(int userId){
+        if(userRepository.findById(userId).orElse(null) == null){
+            return false;
+        }
+        return true;
+    }
     public OrderEntity processOrder(OrderEntity newOrder) {
         List<OrderEntity> suitableOrders = findSuitableOrders(newOrder);
 
