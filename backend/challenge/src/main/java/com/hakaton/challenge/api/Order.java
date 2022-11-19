@@ -26,6 +26,7 @@ public class Order {
     private Double filledQuantity;
     private OrderStatus orderStatus;
     private List<Trade> trades;
+    private int userId;
 
     public Boolean IsValid() {
         if(isCurrencyValid() && isQuantityValid() && isPriceValid() && isTypeValid())

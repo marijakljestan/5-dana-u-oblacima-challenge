@@ -12,7 +12,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
     @Query(value = "select o from OrderEntity o left join fetch o.trades where o.id = ?1")
     OrderEntity fetchWithTrades(int orderId);
 
-    @Query(value = "select o from OrderEntity o where o.orderStatus = 0 and where o.currencyPair = ?1")
+    @Query(value = "select o from OrderEntity o where o.orderStatus = 0 and o.currencyPair = ?1")
     List<OrderEntity> findActiveOrders(String pair);
 
     @Query(value = "select o from OrderEntity o left join fetch o.trades where o.orderStatus = 0 and o.type = 0 and o.price >= ?1 and o.currencyPair = ?2" +

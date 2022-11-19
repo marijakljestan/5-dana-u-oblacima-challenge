@@ -54,7 +54,7 @@ public class OrderServiceTests {
         OrderEntity newOrderEntity = OrderEntity.builder().type(OrderType.BUY).price(9.0).quantity(50.0).currencyPair(DB_CURRENCY_PAIR).orderStatus(OrderStatus.OPEN).filledQuantity(0.0).trades(new ArrayList<>()).build();
         TradeEntity tradeEntity = TradeEntity.builder().buyOrderId(newOrderEntity.getId()).build();
 
-        when(orderRepositoryMock.findSuitableSellOrders(newOrderEntity.getPrice())).thenReturn(orders);
+        when(orderRepositoryMock.findSuitableSellOrders(newOrderEntity.getPrice(), "BTCUSD")).thenReturn(orders);
         when(orderRepositoryMock.save(newOrderEntity)).thenReturn(newOrderEntity);
         when(tradeRepositoryMock.fetchTradesByOrder(newOrderEntity.getId())).thenReturn(Arrays.asList(tradeEntity));
 
@@ -62,7 +62,7 @@ public class OrderServiceTests {
 
         Assert.assertEquals(processedOrder.getOrderStatus(), OrderStatus.CLOSED);
         Assert.assertEquals(Optional.ofNullable(processedOrder.getFilledQuantity()), Optional.of(50.0));
-        verify(orderRepositoryMock, times(1)).findSuitableSellOrders(newOrderEntity.getPrice());
+        verify(orderRepositoryMock, times(1)).findSuitableSellOrders(newOrderEntity.getPrice(), "BTCUSD");
     }
 
     @Test
@@ -71,7 +71,7 @@ public class OrderServiceTests {
         OrderEntity newOrderEntity = OrderEntity.builder().type(OrderType.SELL).price(7.0).quantity(100.0).currencyPair(DB_CURRENCY_PAIR).orderStatus(OrderStatus.OPEN).filledQuantity(0.0).trades(new ArrayList<>()).build();
         TradeEntity tradeEntity = TradeEntity.builder().sellOrderId(newOrderEntity.getId()).build();
 
-        when(orderRepositoryMock.findSuitableBuyOrders(newOrderEntity.getPrice())).thenReturn(orders);
+        when(orderRepositoryMock.findSuitableBuyOrders(newOrderEntity.getPrice(), "BTCUSD")).thenReturn(orders);
         when(orderRepositoryMock.save(newOrderEntity)).thenReturn(newOrderEntity);
         when(tradeRepositoryMock.fetchTradesByOrder(newOrderEntity.getId())).thenReturn(Arrays.asList(tradeEntity));
 
@@ -84,13 +84,13 @@ public class OrderServiceTests {
     @Test
     public void testLoadOrderbook() {
         List<OrderEntity> orders = getActiveOrdersForOrderbook();
-        when(orderRepositoryMock.findActiveOrders()).thenReturn(orders);
+        when(orderRepositoryMock.findActiveOrders("BTCUSD")).thenReturn(orders);
 
-        OrderbookEntity orderbook = orderService.LoadOrderBook();
+        OrderbookEntity orderbook = orderService.LoadOrderBook("BTCUSD");
 
         Assert.assertEquals(orderbook.getBuyOrders().size(), 2);
         Assert.assertEquals(orderbook.getSellOrders().size(), 1);
-        verify(orderRepositoryMock, times(1)).findActiveOrders();
+        verify(orderRepositoryMock, times(1)).findActiveOrders("BTCUSD");
         verifyNoMoreInteractions(orderRepositoryMock);
     }
 
