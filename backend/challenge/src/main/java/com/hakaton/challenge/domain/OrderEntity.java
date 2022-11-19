@@ -44,7 +44,7 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
-    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST})
+    @ManyToOne(optional = false, cascade = {CascadeType.MERGE})
     private UserEntity user;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
