@@ -12,6 +12,7 @@ VALUES (nextval('order_seq_gen'), '2022-05-24 16:48:05.591', 'BTCUSD', 0.0, 0, 7
        (nextval('order_seq_gen'), '2022-05-24 16:38:05.591', 'BTCUSD', 0.0, 0, 5.0, 150.0, 0, 1),
        (nextval('order_seq_gen'), '2022-05-24 16:38:05.591', 'BTCUSD', 0.0, 0, 1.0, 5000.0, 0, 1);
 
+
 -- trades
 --INSERT INTO trade_entity (trade_id, buy_order_id, created_date_time, price, quantity, sell_order_id)
 --VALUES (nextval('trade_seq_gen'), 1, '2022-05-24 16:48:05.591', 100.0, 0.1, 2),

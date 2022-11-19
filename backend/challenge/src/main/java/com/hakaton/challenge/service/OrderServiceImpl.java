@@ -13,7 +13,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.ses_demo.SimpleEmailService;
 
+
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -114,6 +117,16 @@ public class OrderServiceImpl implements OrderService{
         order.setOrderStatus(OrderStatus.CLOSED);
         orderRepository.save(order);
         order.setTrades(tradeRepository.fetchTradesByOrder(order.getId()));
+        /*String subject = "Your order has been completed!!!";
+        String body = "Your " + order.getType().toString() + " order " + order.getId() + "is completely realized";
+        String email = order.getUser().getEmail();
+        try {
+            SimpleEmailService.sendMail(subject, body, email);
+        }
+        catch(IOException e)
+        {
+            System.out.println("Unable to send email!");
+        } */
         return order;
     }
 
