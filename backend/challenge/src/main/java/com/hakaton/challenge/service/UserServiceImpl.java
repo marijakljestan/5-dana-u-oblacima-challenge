@@ -13,8 +13,8 @@ public class UserServiceImpl implements  UserService{
     {
         UserEntity userEntity = new UserEntity();
         userEntity.setEmail(u.getEmail());
-        userEntity.setFirstname(u.getFirstname());
-        userEntity.setLastname(u.getLastname());
+        userEntity.setFirstName(u.getFirstname());
+        userEntity.setLastName(u.getLastname());
         userEntity  = userRepository.save(userEntity);
 
         u.setId(userEntity.getId());

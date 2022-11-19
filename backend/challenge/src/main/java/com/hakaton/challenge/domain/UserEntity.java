@@ -25,11 +25,11 @@ public class UserEntity {
     private String email;
 
     @Column(nullable = false)
-    private String firstname;
+    private String firstName;
 
     @Column(nullable = false)
-    private String lastname;
+    private String lastName;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<OrderEntity> orders;
+    //@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    //private List<OrderEntity> orders;
 }
