@@ -45,5 +45,5 @@ public class Order {
 
     private boolean isQuantityValid() { return quantity > 0.0; }
 
-    private boolean isCurrencyValid() { return currencyPair.equals("BTCUSD"); }
+    private boolean isCurrencyValid() { return currencyPair.equals("BTCUSD") || currencyPair.equals("ETHUSD"); }
 }

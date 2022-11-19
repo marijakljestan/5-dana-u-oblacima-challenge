@@ -17,9 +17,9 @@ public class OrderbookController {
 
     private final OrderService orderService;
 
-    @GetMapping
-    public ResponseEntity<OrderbookEntity> loadOrderbook() {
-        OrderbookEntity orderbook = orderService.LoadOrderBook();
+    @GetMapping(value = "/{pair}")
+    public ResponseEntity<OrderbookEntity> loadOrderbook(@PathVariable("pair") String pair) {
+        OrderbookEntity orderbook = orderService.LoadOrderBook(pair);
         return new ResponseEntity<>(orderbook, HttpStatus.OK);
     }
 }
