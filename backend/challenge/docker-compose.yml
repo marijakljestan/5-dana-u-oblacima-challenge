@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  challenge_backend:
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+      target: ${TARGET:-challengeBackendRuntime}
+    container_name: challenge
+    restart: on-failure
+    ports:
+      - 8081:${port}
+    environment:
+      port: ${port}
+      CHALLENGE_DB_URL: ${CHALLENGE_DB_URL}
+      CHALLENGE_DB_USER: ${CHALLENGE_DB_USER}
+      CHALLENGE_DB_PASSWORD: ${CHALLENGE_DB_PASSWORD}
+      #AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      #AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    depends_on: 
+      - challenge_db
+    networks:
+      - challenge
+    
+  challenge_db:
+    image: postgres:14.1
+    container_name: challenge_db
+    restart: always
+    environment:
+       POSTGRES_USER: ${CHALLENGE_DB_USER}
+       POSTGRES_PASSWORD: ${CHALLENGE_DB_PASSWORD}
+       POSTGRES_DB: ${CHALLENGE_DB_NAME}
+       POSTGRES_HOST: ${CHALLENGE_DB_HOST}
+    networks:
+      - challenge
