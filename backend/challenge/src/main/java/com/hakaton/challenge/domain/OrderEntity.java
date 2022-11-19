@@ -44,6 +44,9 @@ public class OrderEntity {
     @Column(nullable = false)
     private OrderStatus orderStatus;
 
+    @ManyToOne(optional = false, cascade = {CascadeType.PERSIST})
+    private UserEntity user;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<TradeEntity> trades;
 
