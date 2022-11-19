@@ -30,6 +30,6 @@ public class UserEntity {
     @Column(nullable = false)
     private String lastname;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<OrderEntity> orders;
 }

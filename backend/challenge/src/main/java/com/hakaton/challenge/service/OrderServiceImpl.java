@@ -10,7 +10,9 @@ import com.hakaton.challenge.repository.TradeRepository;
 import com.hakaton.challenge.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -26,8 +28,10 @@ public class OrderServiceImpl implements OrderService{
     private final UserRepository userRepository;
 
     @Override
-    public Order ProcessOrder(Order order) {
-
+    public Order ProcessOrder(Order order) throws ResponseStatusException {
+        if(!doesUserExist(order.getUserId())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"User doesn't exists!");
+        }
         OrderEntity newOrder = saveOrder(order);
         OrderEntity createdOrder = processOrder(newOrder);
         return modelMapper.map(createdOrder, Order.class);
@@ -154,6 +158,7 @@ public class OrderServiceImpl implements OrderService{
         orderEntity.setCreatedDateTime(new Date());
         orderEntity.setTrades(new ArrayList<>());
         orderEntity.setFilledQuantity(0.0);
+        orderEntity.setUser(userRepository.findById(order.getUserId()).get());
         return orderRepository.save(orderEntity);
     }
 }
