@@ -7,6 +7,7 @@ import com.hakaton.challenge.dto.CreateTradeDto;
 import com.hakaton.challenge.exception.OrderNotFoundException;
 import com.hakaton.challenge.repository.OrderRepository;
 import com.hakaton.challenge.repository.TradeRepository;
+import com.hakaton.challenge.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class OrderServiceImpl implements OrderService{
     private final TradeRepository tradeRepository;
     private final ModelMapper modelMapper;
 
+    private final UserRepository userRepository;
 
     @Override
     public Order ProcessOrder(Order order) {
@@ -136,7 +138,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public void deleteAll() { orderRepository.deleteAll(); }
+    public void deleteAll() {  tradeRepository.deleteAll(); orderRepository.deleteAll(); userRepository.deleteAll();}
 
     private OrderEntity saveOrder(Order order) {
         order.setId(0);
