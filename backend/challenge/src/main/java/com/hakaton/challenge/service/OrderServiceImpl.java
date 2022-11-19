@@ -10,11 +10,15 @@ import com.hakaton.challenge.repository.TradeRepository;
 import com.hakaton.challenge.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 @AllArgsConstructor
@@ -109,13 +113,22 @@ public class OrderServiceImpl implements OrderService{
                                                 orderRepository.findSuitableBuyOrders(order.getPrice(),order.getCurrencyPair());
         return suitableOrders;
     }
+    @Autowired
+    private SimpleEmailService simpleEmailService;
 
-    private OrderEntity closeOrder(OrderEntity order) {
+    private OrderEntity closeOrder(OrderEntity order){
         order.setOrderStatus(OrderStatus.CLOSED);
         orderRepository.save(order);
         order.setTrades(tradeRepository.fetchTradesByOrder(order.getId()));
+        try {
+            simpleEmailService.sendMail("Order closed :D", "Here is your completed order: \n" + order, order.getUser().getEmail());
+        }catch (IOException e) {
+            Logger.getLogger("ERROR").log(Level.SEVERE, "ERROR ON SENDING EMAIL");
+        }
+
         return order;
     }
+
 
     public OrderbookEntity LoadOrderBook(String pair){
         OrderbookEntity orderBook = new OrderbookEntity();

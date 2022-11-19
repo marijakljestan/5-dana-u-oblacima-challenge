@@ -1,4 +1,4 @@
-package com.example.ses_demo;
+package com.hakaton.challenge.service;
 
 import java.io.IOException;
 
@@ -10,13 +10,15 @@ import com.amazonaws.services.simpleemail.model.Content;
 import com.amazonaws.services.simpleemail.model.Destination;
 import com.amazonaws.services.simpleemail.model.Message;
 import com.amazonaws.services.simpleemail.model.SendEmailRequest;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SimpleEmailService {
     // Replace sender@example.com with your "From" address.
     // This address must be verified with Amazon SES.
     static final String FROM = "challenge.levi9@gmail.com";
 
-    public static void sendMail(String subject, String body, String recipient) throws IOException {
+    public void sendMail(String subject, String body, String recipient) throws IOException {
 
         try {
             AmazonSimpleEmailService client =
